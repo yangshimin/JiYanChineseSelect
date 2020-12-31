@@ -12,6 +12,8 @@ import time
 import json
 import logging
 import requests
+
+from public_func import get_md5
 from yolo.mode_one import run_click, generate_click_points
 from track import get_track, get_click_track
 
@@ -262,14 +264,14 @@ class JiYan(object):
             if not os.path.exists(image_dir):
                 os.makedirs(image_dir)
 
-            image_path = os.path.join(image_dir, "image.jpg")
+            image_path = os.path.join(image_dir, f"{get_md5(image_res.content)}.jpg")
             with open(image_path, "wb") as f:
                 try:
                     f.write(image_res.content)
                 except Exception as e:
                     logging.error(f"保存验证码图片失败: {e.args}")
                 else:
-                    logging.info("保存验证码图片成功")
+                    logging.info(f"保存验证码图片成功: {image_path}")
         else:
             logging.error('请求验证码图片失败')
 
@@ -328,15 +330,19 @@ class JiYan(object):
         else:
             logging.error("点击验证失败")
 
+    def scheduler(self):
+        self.get_gt_challenge()
+        self.get_type()
+        self.get_w()
+        self.get_init_info()
+        self.get_check_w()
+        self.get_check_info()
+        image_infos = self.get_image_info()
+        jy.get_image()
+        # self.get_validate(image_infos)
+
 
 if __name__ == "__main__":
     jy = JiYan()
-    jy.get_gt_challenge()
-    jy.get_type()
-    jy.get_w()
-    jy.get_init_info()
-    jy.get_check_w()
-    jy.get_check_info()
-    image_infos = jy.get_image_info()
-    jy.get_image()
-    jy.get_validate(image_infos)
+    for i in range(4000):
+        jy.scheduler()
